@@ -1,21 +1,21 @@
-module.exports = function (app) {
+module.exports = function (app, songsRepository) {
     app.get("/songs", function (req, res) {
         let songs = [{
-            "title":"Blank space",
-            "price":"1.2"
-        },{
-            "title":"See you again",
-            "price":"1.3"
-        },{
-            "title":"Uptown Funk",
-            "price":"1.1"
+            "title": "Blank space",
+            "price": "1.2"
+        }, {
+            "title": "See you again",
+            "price": "1.3"
+        }, {
+            "title": "Uptown Funk",
+            "price": "1.1"
         }];
 
         let response = {
-            seller:'Tienda de canciones',
-            songs:songs
+            seller: 'Tienda de canciones',
+            songs: songs
         };
-        res.render("shop.twig",response);
+        res.render("shop.twig", response);
     });
     app.get('/add', function (req, res) {
         let response = parseInt(req.query.num1) + parseInt(req.query.num2);
@@ -32,12 +32,19 @@ module.exports = function (app) {
         let response = 'id: ' + req.params.id + '<br>' + 'Tipo de música: ' + req.params.kind;
         res.send(response);
     });
-    app.post('/songs/add',function(req,res){
-       let response = "Canción agregada:"+req.body.title+"<br>"
-       +"genero: "+ req.body.kind+"<br>"
-       +"precio: "+req.body.price;
-
-       res.send(response);
+    app.post('/songs/add', function (req, res) {
+        let song = {
+            title: req.body.title,
+            kind: req.body.kind,
+            price: req.body.price
+        }
+        songsRepository.insertSong(song, function (songId){
+            if(songId == null){
+                res.send("Error al insertar cancion");
+            } else{
+                res.send("Agregada la canción Id: "+ songId);
+            }
+        });
     });
     app.get('/promo*', function (req, res) {
         res.send('Respuesta al patrón promo*');
