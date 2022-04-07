@@ -1,25 +1,23 @@
 const {ObjectId} = require("mongodb");
 module.exports = function (app, commentsRepository) {
-    app.post('/comments/:song_id', function (req, res) {
-        if (req.session.user == null) {
-            res.send('Usuario no identificado ');
+    app.post('/comments/add/:song_id', function (req, res) {
+        let songId = ObjectId(req.params.song_id);
+        let comment = {
+            author: req.session.user,
+            text: req.body.text,
+            song_id: songId
+        }
+        if (typeof req.body.text === 'undefined' || req.body.text === null || req.body.text.trim().length == 0) {
+            res.send("El comentario no puede estar en blanco");
         } else {
-            let comment = {
-                author: req.session.user,
-                text: req.body.text,
-                song_id: req.body.song_id
-            }
-            let songId = req.params.id;
-            let filter = {_id: ObjectId(songId)};
-            //que no se cree un documento nuevo, si no existe
-            const options = {upsert: false}
             commentsRepository.insertComment(comment, function (commentId) {
-                if (songId == null) {
+                if (commentId == null) {
                     res.send("Error al insertar el comentario");
                 } else {
-                    res.send("Agregada el comentario con ID:  " + commentId)
+                    res.redirect('/songs/' + songId);
                 }
             });
         }
+
     });
 }

@@ -42,8 +42,9 @@ module.exports = function (app, songsRepository, commentsRepository) {
         let filter = {_id: ObjectId(req.params.id)};
         let options = {};
         songsRepository.findSong(filter, options).then(song => {
-            commentsRepository.getComments(filter, options).then(comments => {
-                res.render("songs/song.twig", {song: song}, {comments: comments});
+            let comm_filter = {song_id: ObjectId(req.params.id)};
+            commentsRepository.getComments(comm_filter, options).then(comments => {
+                res.render("songs/song.twig", {song: song, comments: comments});
             }).catch(error => {
                 res.send("Se ha producido un error al buscar los comentarios " + error)
             });
@@ -51,6 +52,7 @@ module.exports = function (app, songsRepository, commentsRepository) {
             res.send("Se ha producido un error al buscar la canción " + error)
         });
     });
+
     app.get('/songs/:kind/:id', function (req, res) {
         let response = 'id: ' + req.params.id + '<br>' + 'Tipo de música: ' + req.params.kind;
         res.send(response);
