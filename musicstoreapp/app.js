@@ -36,7 +36,9 @@ app.use("/shop/",userSessionRouter);
 
 let songsRepository = require("./repositories/songsRepository.js");
 songsRepository.init(app, MongoClient);
-require("./routes/songs.js")(app, songsRepository);
+let commentsRepository = require("./repositories/commentsRepository.js");
+commentsRepository.init(app, MongoClient);
+require("./routes/songs.js")(app, songsRepository, commentsRepository);
 
 let bodyParser = require('body-parser');
 app.use(bodyParser.json());
