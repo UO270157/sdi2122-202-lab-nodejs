@@ -20,11 +20,12 @@ let crypto = require('crypto');
 let fileUpload = require('express-fileupload');
 app.use(fileUpload({
     limits: {fileSize: 50 * 1024 * 1024},
-    createParentPath: true}));
+    createParentPath: true
+}));
 
 app.set('uploadPath', __dirname);
-app.set('clave','abcdefg');
-app.set('crypto',crypto);
+app.set('clave', 'abcdefg');
+app.set('crypto', crypto);
 
 const {MongoClient} = require("mongodb");
 const url = 'mongodb+srv://admin:admin@tiendamusica.jigz8.mongodb.net/myFirstDatabase?retryWrites=true&w=majority';
@@ -33,11 +34,15 @@ app.set('connectionStrings', url);
 const userSessionRouter = require('./routes/userSessionRouter');
 
 const userAudiosRouter = require('./routes/userAudiosRouter');
-app.use("/songs/add",userSessionRouter);
-app.use("/publications",userSessionRouter);
-app.use("/audios/",userAudiosRouter);
-app.use("/shop/",userSessionRouter);
-app.use("/comments/add",userSessionRouter);
+app.use("/songs/add", userSessionRouter);
+app.use("/publications", userSessionRouter);
+app.use("/audios/", userAudiosRouter);
+app.use("/shop/", userSessionRouter);
+app.use("/comments/add", userSessionRouter);
+
+const userAuthorRouter = require('./routes/userAuthorRouter');
+app.use("/songs/edit", userAuthorRouter);
+app.use("/songs/delete", userAuthorRouter);
 
 let songsRepository = require("./repositories/songsRepository.js");
 songsRepository.init(app, MongoClient);
@@ -45,8 +50,7 @@ let commentsRepository = require("./repositories/commentsRepository.js");
 commentsRepository.init(app, MongoClient);
 require("./routes/songs.js")(app, songsRepository, commentsRepository);
 
-require("./routes/comments")(app,commentsRepository);
-
+require("./routes/comments")(app, commentsRepository);
 
 
 const usersRepository = require("./repositories/usersRepository.js");
