@@ -63,7 +63,12 @@ module.exports = function (app, songsRepository, commentsRepository) {
         songsRepository.findSong(filter, options).then(song => {
             let comm_filter = {song_id: ObjectId(req.params.id)};
             commentsRepository.getComments(comm_filter, options).then(comments => {
-                res.render("songs/song.twig", {song: song, comments: comments});
+                isAuthorOrOwner(filter,req.session.user, function (result){
+                    if(result)
+                        res.render("songs/song.twig", {song: song, comments: comments, available:true});
+                    else
+                        res.render("songs/song.twig", {song: song, comments: comments, available:false});
+                })
             }).catch(error => {
                 res.send("Se ha producido un error al buscar los comentarios " + error)
             });
@@ -197,13 +202,18 @@ module.exports = function (app, songsRepository, commentsRepository) {
     app.get('/songs/buy/:id', function (req, res) {
         let songId = ObjectId(req.params.id);
         let shop = {user: req.session.user, songId: songId}
-        songsRepository.buySong(shop, function (shopId) {
-            if (shopId == null) {
-                res.send("Error al realizar la compra");
-            } else {
-                res.redirect("/purchases");
-            }
-        })
+        isAuthorOrOwner(songId,req.session.user, function (available){
+            if(available)
+            songsRepository.buySong(shop, function (shopId) {
+                if (shopId == null) {
+                    res.send("Error al realizar la compra");
+                } else {
+                    res.redirect("/purchases");
+                }
+            });
+            else
+                res.redirect("/shop");
+        });
     });
 
     app.get('/purchases', function (req, res) {
@@ -229,4 +239,21 @@ module.exports = function (app, songsRepository, commentsRepository) {
         let response = 'id: ' + req.params.id + '<br>' + 'Tipo de música: ' + req.params.kind;
         res.send(response);
     });
+
+    function isAuthorOrOwner(filter,usuario,callback){
+        songsRepository.findSong(filter).then(song=> {
+            if(song.author === usuario)
+                callback(false);
+            else{
+                let filter = {user:usuario};
+                let options = {};
+                songsRepository.getPurchases(filter,options).then(songs => {
+                    for(let i=0;i<song.length;i++)
+                        if(songs[i] == song)
+                            callback(false);
+                    callback(true);
+                })
+            }
+        })
+    }
 }
