@@ -62,6 +62,8 @@ module.exports = function (app, songsRepository, commentsRepository) {
         let options = {};
         songsRepository.findSong(filter, options).then(song => {
             let comm_filter = {song_id: ObjectId(req.params.id)};
+            let available = true;
+            isAuthorOrOwner(filter,req.session.user, function (result){available=result});
             commentsRepository.getComments(comm_filter, options).then(comments => {
                 isAuthorOrOwner(filter,req.session.user, function (result){
                     if(result)
@@ -248,8 +250,8 @@ module.exports = function (app, songsRepository, commentsRepository) {
                 let filter = {user:usuario};
                 let options = {};
                 songsRepository.getPurchases(filter,options).then(songs => {
-                    for(let i=0;i<song.length;i++)
-                        if(songs[i] == song)
+                    for(let i=0;i<songs.length;i++)
+                        if(songs[i].song_id === song.song_id)
                             callback(false);
                     callback(true);
                 })
