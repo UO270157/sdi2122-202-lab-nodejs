@@ -5,6 +5,8 @@ var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 
 let app = express();
+let jwt = require('jsonwebtoken');
+app.set('jwt', jwt);
 
 let bodyParser = require('body-parser');
 app.use(bodyParser.json());
@@ -46,6 +48,9 @@ const userAuthorRouter = require('./routes/userAuthorRouter');
 app.use("/songs/edit", userAuthorRouter);
 app.use("/songs/delete", userAuthorRouter);
 
+const userTokenRouter = require('./routes/userTokenRouter');
+app.use("/api/v1.0/songs/", userTokenRouter);
+
 let songsRepository = require("./repositories/songsRepository.js");
 songsRepository.init(app, MongoClient);
 let commentsRepository = require("./repositories/commentsRepository.js");
@@ -59,6 +64,7 @@ require("./routes/comments")(app, commentsRepository);
 const usersRepository = require("./repositories/usersRepository.js");
 usersRepository.init(app, MongoClient);
 require("./routes/users.js")(app, usersRepository);
+require("./routes/api/songsAPIv1.0.js")(app, songsRepository, usersRepository);
 
 let indexRouter = require('./routes/index');
 require("./routes/songs")(app);
