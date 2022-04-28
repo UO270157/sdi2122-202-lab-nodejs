@@ -61,14 +61,6 @@ module.exports = function (app, songsRepository, commentsRepository) {
         let filter = {_id: ObjectId(req.params.id)};
         let options = {};
         songsRepository.findSong(filter, options).then(song => {
-            filter = {user: req.session.user};
-            let opts = {projection: {_id: 0, songId: 1}};
-            songsRepository.getPurchases(filter, opts).then(purchasedIds => {
-                for (let i = 0; i < purchasedIds.length; i++) {
-                    if(song.author === req.session.user || song._id === purchasedIds[i].songId)
-                        song.price=-1;
-                }
-            })
             let comm_filter = {song_id: ObjectId(req.params.id)};
             let available = true;
             isAuthorOrOwner(filter,req.session.user, function (result){available=result});
